@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <style>
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border: 1px solid #ccc;
+			width: 40%;
+			height: 80%;
+        }
+    </style>
+
+  <style>
+    #reader {
+      height: 20% !important;
+	  width: 80% !important;
+
+      margin: auto;
+    }
+    #result {
+      margin-top: 20px;
+      text-align: center;
+    }
+  </style>
+
+    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	
+</head>
+<body>
+                                    <img src="https://www.avast.com/hs-fs/hubfs/New_Avast_Academy/what_are_qr_codes_and_how_do_you_scan_them_academy/Academy-What-are-QR-Codes-and-how-do-you-scan-them-Hero.jpg" onclick="showPopup()" width="50px" height="34px">
+    								<input type="text" id="parentInput" placeholder="Value will appear here">
+
+
+                                    <div id="popup" class="popup">
+                                        <input type="text" id="popupInput" placeholder="Enter value">
+                                        <button onclick="transferValue()">Transfer & Close</button>
+
+                                        <div id="reader"></div>
+                                        <div id="result">Scan a QR code to see the result here</div>
+                                    </div>
+
+  <script src=https://unpkg.com/html5-qrcode?module"></script>
+
+
+    <script>
+        // Get references to elements
+        const popup = document.getElementById('popup');
+        const parentInput = document.getElementById('parentInput');
+        const popupInput = document.getElementById('popupInput');
+
+        // Show the popup
+        function showPopup() {
+        if(popup==null) popup = document.getElementById('popup');
+            popup.style.display = 'block';
+            popupInput.focus();
+
+            startScanner();
+        }
+
+        // Transfer value to parent and close popup
+        function transferValue(scanresult) {
+            // Get popup input value
+            const value = popupInput.value;
+            
+            // Populate parent window input
+            parentInput.value = scanresult;
+            
+            // Reset and hide popup
+            popupInput.value = '';
+            popup.style.display = 'none';
+        }
+    </script>
+  <script src="https://unpkg.com/html5-qrcode?module"></script>
+
+   <script>
+       let html5QrcodeScanner = new Html5QrcodeScanner(
+      "reader", { fps: 10, qrbox: 650, videoConstraints: {
+                    facingMode: { exact: "environment" },
+                } },
+      /* verbose= */ false);
+    function onScanSuccess(decodedText, decodedResult) {
+      // Handle the result here
+	  transferValue(decodedText);
+      //document.getElementById('popupInput').value = 'QR Code detected: '+decodedText;
+      if(decodedText!=undefined && decodedText!=""){
+		document.querySelector("#html5-qrcode-button-camera-stop").click();
+      }
+    }
+
+    function onScanFailure(error) {
+      // Handle scan failure, typically ignore and keep scanning
+      console.warn('QR Code scan error: '+error);
+    }
+ function startScanner() {
+    // Initialize the QR code scanner
+
+    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+
+    }
+  </script>
+
+  
+ </body>
+
+</html>

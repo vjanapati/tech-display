@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Call Async Function</title>
+</head>
+<body>
+  <button onclick="handleClick()">Call Async Function</button>
+
+  <script>
+    // Declare an async function
+    function handleClick() {
+      try {
+        const result = await fetchData();
+        console.log("Data fetched:", result);
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    }
+
+    // Simulate an async operation
+    async function fetchData() {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve("Async data received!");
+        }, 1000); // Simulate a 1-second delay
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<html lang="en">
+
+<head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<script>
+let qrreader=null;
+function startScanner() {
+  // Show the scanner and hide the product info
+  $('#reader').show();
+  $('#product_info').hide();
+
+  if (qrreader == null) {
+    qrreader = new Html5Qrcode("reader");
+    const videoConstraints = {
+      facingMode: "environment"
+    };
+
+    const config = {
+      fps: 20,
+      qrbox: {
+        width: 350,
+        height: 350
+      }
+    };
+
+    let isWaitingForResponse = false;
+    const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+      if (isWaitingForResponse) {
+        console.log("Still waiting for the previous scan...");
+        return;
+      }
+
+      isWaitingForResponse = true;
+
+      console.log(`Message: ${decodedText}, Result: ${JSON.stringify(decodedResult)}`);
+      $('#barcode_search').val(decodedText); // Set the value of the barcode field
+      $("#barcode_submit").trigger('click'); // Trigger a click event on the submit button
+
+      // Hide the scanner and show the product info
+      $('#reader').hide();
+      $('#product_info').show();
+
+      // Set a timeout to allow the next scan
+      setTimeout(() => {
+        isWaitingForResponse = false;
+      }, 2000); // 5000ms = 5 seconds, adjust as needed
+    };
+    const qrCodeErrorCallback = (errorMessage) => {
+      //console.log(errorMessage);
+	  console.log('error in scanning');
+    };
+
+    qrreader.start(
+      videoConstraints,
+      config,
+      qrCodeSuccessCallback,
+      qrCodeErrorCallback
+    ).catch((error) => {
+      //console.log(error);
+    });
+  }
+}
+
+// Start scanner on button click
+$(document).on('click', '#start_reader', function() {
+  startScanner();
+});
+
+// Start scanner after successful form submission
+$('#update_form').on('submit', function(event) {
+  event.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: '../my-scanner-script.php',
+    data: $(this).serialize(),
+    dataType: 'json',
+    success: function(response) {
+      if (response.status === 'success') {
+        // Attempt to start the scanner
+        startScanner();
+      }
+    }
+  });
+});
+</script>
+
+<head>
+<body>
+<button id="start_reader">Start QR Code scanner</button>
+
+<form id="update_form">
+  <div id="reader"></div>
+  <input id="barcode_search" />
+  <button id="barcode_submit">Submit</button>
+  <div id="product_info">Some product info</div>
+</form>
+
+
+</body>
+
+</html>

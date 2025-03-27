@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Scanner with Specific Camera</title>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body>
+    <div id="qr-reader" style="width: 500px;"></div>
+    <p>Scanned Result: <span id="result"></span></p>
+
+    <script>
+        // Function to select a good back camera
+        async function selectGoodBackCamera() {
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+
+                if (videoDevices.length === 0) {
+                    console.log("No cameras found.");
+                    return null;
+                }
+
+                // Try to find a back camera by label or facingMode
+                for (const device of videoDevices) {
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        video: { deviceId: { exact: device.deviceId } }
+                    });
+                    const track = stream.getVideoTracks()[0];
+                    const capabilities = track.getCapabilities();
+                    stream.getTracks().forEach(track => track.stop()); // Clean up
+
+                    if (capabilities.facingMode === 'environment') {
+                        console.log(`Selected back camera: ${device.label}`);
+                        return device.deviceId; // Return the cameraId
+                    }
+                }
+
+                // Fallback to the first camera if no back camera is found
+                console.log("No back camera found, using default.");
+                return videoDevices[0].deviceId;
+
+            } catch (error) {
+                console.error("Error selecting camera:", error);
+                return null;
+            }
+        }
+
+        // Function to start the QR scanner with a specific cameraId
+        async function startQrScanner() {
+            const cameraId = await selectGoodBackCamera();
+            if (!cameraId) {
+                document.getElementById('result').innerText = "Failed to find a camera.";
+                return;
+            }
+
+            // Configure the scanner with the specific cameraId
+            const config = {
+                fps: 10, // Frames per second
+                qrbox: { width: 250, height: 250 }, // Scanning box size
+                videoConstraints: {
+                    deviceId: { exact: cameraId } // Pass the cameraId here
+                }
+            };
+
+            const html5QrCodeScanner = new Html5QrcodeScanner("qr-reader", config);
+
+            // Define success and error callbacks
+            function onScanSuccess(decodedText) {
+                document.getElementById('result').innerText = decodedText;
+                console.log(`QR Code scanned: ${decodedText}`);
+            }
+
+            function onScanError(error) {
+                console.warn(`Scan error: ${error}`);
+            }
+
+            // Render the scanner with the selected camera
+            html5QrCodeScanner.render(onScanSuccess, onScanError);
+        }
+
+        // Start the scanner when the page loads
+        window.onload = startQrScanner;
+    </script>
+</body>
+</html>

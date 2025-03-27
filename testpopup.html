@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Popup to Parent Example</title>
+    <style>
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border: 1px solid #ccc;
+			width: 30%;
+			height: 30%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Parent window elements -->
+    <button onclick="showPopup()">Show Popup</button>
+    <input type="text" id="parentInput" placeholder="Value will appear here">
+
+    <!-- Popup window -->
+    <div id="popup" class="popup">
+        <input type="text" id="popupInput" placeholder="Enter value">
+        <button onclick="transferValue()">Transfer & Close</button>
+    </div>
+
+    <script>
+        // Get references to elements
+        const popup = document.getElementById('popup');
+        const parentInput = document.getElementById('parentInput');
+        const popupInput = document.getElementById('popupInput');
+
+        // Show the popup
+        function showPopup() {
+            popup.style.display = 'block';
+            popupInput.focus();
+        }
+
+        // Transfer value to parent and close popup
+        function transferValue() {
+            // Get popup input value
+            const value = popupInput.value;
+            
+            // Populate parent window input
+            parentInput.value = value;
+            
+            // Reset and hide popup
+            popupInput.value = '';
+            //popup.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

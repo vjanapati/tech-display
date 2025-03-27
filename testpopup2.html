@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Popup Example</title>
+  <script>
+    function openPopup() {
+      const popup = window.open("", "popupWindow", "width=400,height=200");
+      popup.document.write('
+        <!DOCTYPE html>
+        <html lang='en'>
+        <head>
+          <meta charset='UTF-8'>
+          <title>Popup</title>
+        </head>
+        <body>
+          <input type='text' id='popupText' placeholder='Enter text'>
+          <button onclick='sendValue()'>Close</button>
+          <script>
+            function sendValue() {
+              const textValue = document.getElementById('popupText').value;
+              window.opener.receiveValue(textValue);
+              window.close();
+            }
+          </script>
+        </body>
+        </html>
+      ");
+    }
+
+    function receiveValue(value) {
+      document.getElementById('parentText').value = value;
+    }
+  </script>
+</head>
+<body>
+  <button onclick="openPopup()">Open Popup</button>
+  <input type="text" id="parentText" placeholder="Popup text will appear here">
+</body>
+</html>

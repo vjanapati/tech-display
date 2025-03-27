@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <style>
+    #reader {
+      width: 700px;
+      margin: auto;
+    }
+    #result {
+      margin-top: 20px;
+      text-align: center;
+    }
+  </style>
+
+    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	
+</head>
+<body>
+  <div id="reader"></div>
+  <div id="result">Scan a QR code to see the result here</div>
+
+  <script src=https://unpkg.com/html5-qrcode?module"></script>
+
+
+  <script>
+    function onScanSuccess(decodedText, decodedResult) {
+      // Handle the result here
+      document.getElementById('result').textContent = 'QR Code detected: '+decodedText;
+    }
+
+    function onScanFailure(error) {
+      // Handle scan failure, typically ignore and keep scanning
+      console.warn('QR Code scan error: '+error);
+    }
+
+    // Initialize the QR code scanner
+    let html5QrcodeScanner = new Html5QrcodeScanner(
+      "reader", { fps: 10, qrbox: 650, videoConstraints: {
+                    facingMode: { exact: "user" },
+                } },
+      /* verbose= */ false);
+    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+  </script>
+  
+ </body>
+
+</html>
