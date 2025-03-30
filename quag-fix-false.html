@@ -1,0 +1,95 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>QuaggaJS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+    <style>
+        #camera video {
+            width: 100%;
+            max-width: 640px;
+        }
+    </style>
+</head>
+
+<body>
+<div id="camera" style="width:100%"></div>
+<div id="result"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
+<script>
+    const quaggaConf = {
+        inputStream: {
+            target: document.querySelector("#camera"),
+            type: "LiveStream",
+            constraints: {
+                width: { min: 640 },
+                height: { min: 480 },
+                focusMode: "continuous",
+                facingMode: "environment",
+                aspectRatio: { min: 1, max: 2 }
+            },
+            area: { // Restrict scanning area to reduce false positives from edges
+                top: "20%",
+                right: "20%",
+                left: "20%",
+                bottom: "20%"
+            }
+        },
+        locator: {
+            patchSize: "medium", // "x-small", "small", "medium", "large", "x-large"
+            halfSample: true // Improves performance, may affect accuracy
+        },
+        numOfWorkers: 4, // Use multiple workers for better processing
+        decoder: {
+            readers: ["code_128_reader", "ean_reader", "ean_8_reader", "code_39_reader", 
+                     "code_39_vin_reader", "codabar_reader", "upc_reader", "upc_e_reader", 
+                     "i2of5_reader"],
+            multiple: false // Prevent multiple barcode detection in one frame
+        },
+        locate: true
+    };
+
+    Quagga.init(quaggaConf, function (err) {
+        if (err) {
+            console.log(err);
+            return;
+        }
+        Quagga.start();
+    });
+
+    let lastResult = null;
+    let detectionCount = 0;
+    const requiredConsistency = 3; // Number of consistent reads before accepting
+
+    Quagga.onDetected(function (result) {
+        const code = result.codeResult.code;
+        
+        // Validation and consistency check
+        if (code === lastResult) {
+            detectionCount++;
+        } else {
+            lastResult = code;
+            detectionCount = 1;
+        }
+
+        // Only display result if detected consistently
+        if (detectionCount >= requiredConsistency) {
+            document.getElementById("result").textContent = code;
+            // Optional: Stop scanning after successful read
+            // Quagga.stop();
+        }
+    });
+
+    // Optional: Add error handling
+    Quagga.onProcessed(function(result) {
+        if (result && result.codeResult && !result.codeResult.code) {
+            console.log("Processing frame, no valid code found");
+        }
+    });
+</script>
+</body>
+</html>
+
