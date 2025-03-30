@@ -14,6 +14,8 @@
 
 <body>
 <div id="camera" style="width:100%"></div>
+<div id="result"></div>
+
 <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
 <script>
     const quaggaConf = {
@@ -23,6 +25,7 @@
             constraints: {
                 width: { min: 640 },
                 height: { min: 480 },
+		        focusMode: "continuous",
                 facingMode: "environment",
                 aspectRatio: { min: 1, max: 2 }
             }
@@ -40,7 +43,8 @@
     });
 
     Quagga.onDetected(function (result) {
-        alert("Detected barcode: " + result.codeResult.code);
+        //alert("Detected barcode: " + result.codeResult.code);
+		document.getElementById("result").textContent=result.codeResult.code;
     });
 </script>
 </body>
