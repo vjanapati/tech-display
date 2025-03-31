@@ -31,8 +31,9 @@
             }
         },
         decoder: {
-            readers: ["code_39_vin_reader"]
+            readers: ["data_matrix_reader", "code_39_vin_reader", "codabar_reader", "upc_reader", "upc_e_reader", "i2of5_reader"]
         },
+		
     }
 
     Quagga.init(quaggaConf, function (err) {
