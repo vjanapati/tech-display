@@ -31,7 +31,7 @@
             }
         },
         decoder: {
-            readers: ["code_128_reader", "ean_reader", "ean_8_reader", "code_39_reader", "code_39_vin_reader", "codabar_reader", "upc_reader", "upc_e_reader", "i2of5_reader","ean_extended"]
+            readers: ["code_128_reader", "ean_reader", "ean_8_reader", "code_39_reader", "code_39_vin_reader", "codabar_reader", "upc_reader", "upc_e_reader", "i2of5_reader", "ean_extended"]
         },
     }
 
@@ -44,8 +44,17 @@
 
     Quagga.onDetected(function (result) {
         //alert("Detected barcode: " + result.codeResult.code);
-		document.getElementById("result").textContent=result.codeResult.code;
+		document.getElementById("result").textContent=onDetected(result);
     });
+	
+	let detectionHash = {};
+	function onDetected(result) {
+    detectionHash[result.codeResult.code]++;
+    if(detectionHash[result.codeResult.code] >= 5) {
+        detectionHash = {};
+        return result.codeResult.code;
+    }
+}
 </script>
 </body>
 </html>
