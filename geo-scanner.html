@@ -1,0 +1,50 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>QuaggaJS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+    <style>
+        #camera video {
+            width: 100%;
+            max-width: 640px;
+        }
+    </style>
+</head>
+
+<body>
+<video id="scanner" autoplay></video>
+<div id="result"></div>
+<button id="start-btn" value="Start"/>
+<button id="stop-btn" value="Stop"/>
+<script src="https://unpkg.com/@georapbox/barcode-scanner/dist/barcode-scanner.min.js"></script>
+
+<script>
+    
+const videoElement = document.getElementById("scanner");
+
+const scanner = new BarcodeScanner(videoElement, {
+    onScan: (barcode) => {
+        console.log("Barcode detected:", barcode);
+        alert("Scanned: " + barcode);
+    },
+    onError: (err) => {
+        console.error("Error:", err);
+    }
+});
+
+// Start scanning when the user clicks a button
+document.getElementById("start-btn").addEventListener("click", () => {
+    scanner.start();
+});
+
+// Stop scanning
+document.getElementById("stop-btn").addEventListener("click", () => {
+    scanner.stop();
+});	
+</script>
+</body>
+</html>
+
