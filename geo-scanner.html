@@ -1,50 +1,91 @@
-
-
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="utf-8"/>
-    <title>QuaggaJS</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+    <title>QuaggaJS Barcode Scanner Example</title>
+    <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
     <style>
-        #camera video {
-            width: 100%;
-            max-width: 640px;
+        #scanner-container {
+            position: relative;
+            width: 500px;
+            height: 300px;
+            border: 1px solid #ccc;
         }
     </style>
 </head>
-
 <body>
-<video id="scanner" autoplay></video>
-<div id="result"></div>
-<button id="start-btn" value="Start"/>
-<button id="stop-btn" value="Stop"/>
-<script src="https://unpkg.com/@georapbox/barcode-scanner/dist/barcode-scanner.min.js"></script>
-
-<script>
+    <h1>QuaggaJS Barcode Scanner</h1>
     
-const videoElement = document.getElementById("scanner");
+    <div>
+        <button id="startButton">Start Scanning</button>
+        <button id="stopButton">Stop Scanning</button>
+    </div>
+    
+    <div id="scanner-container"></div>
+    
+    <div>
+        <p>Result: <span id="result">No barcode detected</span></p>
+    </div>
 
-const scanner = new BarcodeScanner(videoElement, {
-    onScan: (barcode) => {
-        console.log("Barcode detected:", barcode);
-        alert("Scanned: " + barcode);
-    },
-    onError: (err) => {
-        console.error("Error:", err);
-    }
-});
-
-// Start scanning when the user clicks a button
-document.getElementById("start-btn").addEventListener("click", () => {
-    scanner.start();
-});
-
-// Stop scanning
-document.getElementById("stop-btn").addEventListener("click", () => {
-    scanner.stop();
-});	
-</script>
+    <script>
+        const startButton = document.getElementById('startButton') ;
+        const stopButton = document.getElementById('stopButton');
+        const resultElement = document.getElementById('result');
+        
+        startButton.addEventListener('click', () => {
+            Quagga.init({
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: document.querySelector('#scanner-container'),
+                    constraints: {
+                        width: 480,
+                        height: 320,
+                        facingMode: "environment"
+                    },
+                },
+                decoder: {
+                    readers: [
+                        "code_128_reader",
+                        "ean_reader",
+                        "ean_8_reader",
+                        "code_39_reader",
+                        "code_93_reader",
+                        "upc_reader",
+                        "upc_e_reader",
+                        "codabar_reader",
+                        "i2of5_reader"
+                    ],
+                    debug: {
+                        showCanvas: true,
+                        showPatches: true,
+                        showFoundPatches: true,
+                        showSkeleton: true,
+                        showLabels: true,
+                        showPatchLabels: true,
+                        showRemainingPatchLabels: true,
+                    }
+                },
+            }, function(err) {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
+                console.log("Initialization finished. Ready to start");
+                Quagga.start();
+            });
+            
+            Quagga.onDetected(function(result) {
+                const code = result.codeResult.code;
+                resultElement.textContent = code;
+                console.log("Barcode detected and processed : [" + code + "]", result);
+            });
+        });
+        
+        stopButton.addEventListener('click', () => {
+            Quagga.stop();
+            resultElement.textContent = 'No barcode detected';
+            console.log('Stopped scanning');
+        });
+    </script>
 </body>
 </html>
-
