@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>jQuery Barcode Scanner</title>
+  <!-- jQuery CDN -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <!-- Optional: Barcode Detector Polyfill for non-Chromium browsers -->
+  <script src="https://unpkg.com/@undecaf/barcode-detector-polyfill@0.9.20/dist/index.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    #video {
+      width: 100%;
+      max-width: 640px;
+      height: auto;
+      border: 2px solid #333;
+      border-radius: 5px;
+      margin: 20px auto;
+      display: block;
+    }
+    #result {
+      font-size: 18px;
+      color: #333;
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #fff;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    #startBtn, #stopBtn {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin: 5px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    #startBtn:hover, #stopBtn:hover {
+      background-color: #0056b3;
+    }
+    #stopBtn {
+      background-color: #dc3545;
+    }
+    #stopBtn:hover {
+      background-color: #b02a37;
+    }
+  </style>
+</head>
+<body>
+  <h1>jQuery Barcode Scanner</h1>
+  <video id="video" autoplay playsinline></video>
+  <div id="result">Scan a barcode to see the result here.</div>
+  <button id="startBtn">Start Scanner</button>
+  <button id="stopBtn">Stop Scanner</button>
+
+  <script>
+    $(document).ready(function() {
+      let stream = null;
+      let scanning = false;
+      const $video = $('#video');
+      const $result = $('#result');
+
+      // Check if BarcodeDetector is supported
+      if (!('BarcodeDetector' in window)) {
+        $result.text('Barcode Detector is not supported in this browser.');
+        $('#startBtn').prop('disabled', true);
+        return;
+      }
+
+      // Initialize BarcodeDetector
+      const barcodeDetector = new BarcodeDetector({
+        formats: [
+          'code_128',
+          'ean_13',
+          'ean_8',
+          'upc_a',
+          'upc_e',
+          'code_39',
+          'qr_code' // Add more formats as needed
+        ]
+      });
+
+      // Start scanner function
+      async function startScanner() {
+        if (scanning) return;
+
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment' } // Prefer rear camera
+          });
+          $video[0].srcObject = stream;
+          $video[0].play();
+          scanning = true;
+          $result.text('Scanning...');
+          scanBarcode();
+        } catch (err) {
+          console.error('Camera error:', err);
+          $result.text('Error accessing camera. Please allow permissions.');
+        }
+      }
+
+      // Stop scanner function
+      function stopScanner() {
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+          $video[0].srcObject = null;
+          scanning = false;
+          $result.text('Scanner stopped. Click "Start Scanner" to begin again.');
+        }
+      }
+
+      // Scan barcode continuously
+      async function scanBarcode() {
+        if (!scanning) return;
+
+        try {
+          const barcodes = await barcodeDetector.detect($video[0]);
+          if (barcodes.length > 0) {
+            const barcode = barcodes[0];
+            $result.text(`Detected Barcode: ${barcode.rawValue}`);
+          }
+        } catch (err) {
+          console.error('Detection error:', err);
+        }
+
+        // Continue scanning
+        requestAnimationFrame(scanBarcode);
+      }
+
+      // Button event handlers
+      $('#startBtn').on('click', function() {
+        startScanner();
+      });
+
+      $('#stopBtn').on('click', function() {
+        stopScanner();
+      });
+
+      // Start scanner on page load (optional)
+      // startScanner();
+    });
+  </script>
+</body>
+</html>
