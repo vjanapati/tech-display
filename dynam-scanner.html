@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dynamsoft Barcode Scanner</title>
+  <script src="https://cdn.jsdelivr.net/npm/dynamsoft-javascript-barcode@10.0.20/dist/dbr.js"></script>
+</head>
+<body>
+  <h1>Dynamsoft Scanner</h1>
+  <div id="scanner" style="width: 300px; height: 300px;"></div>
+  <div id="result"></div>
+
+  <script>
+    Dynamsoft.DBR.BarcodeScanner.license = "YOUR_LICENSE_KEY_HERE"; // Replace with your key
+
+    (async () => {
+      const scanner = await Dynamsoft.DBR.BarcodeScanner.createInstance();
+      await scanner.updateVideoSettings({ video: { facingMode: "environment" } });
+
+      scanner.onFrameRead = results => {
+        for (const result of results) {
+          document.getElementById('result').innerText = "Scanned: " + result.barcodeText;
+          scanner.hide(); // stop after first
+          break;
+        }
+      };
+
+      scanner.onUnduplicatedRead = (txt, result) => {
+        console.log("Unduplicated read:", txt);
+      };
+
+      await scanner.show(document.getElementById('scanner'));
+    })();
+  </script>
+</body>
+</html>
