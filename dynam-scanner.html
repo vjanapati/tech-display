@@ -2,35 +2,41 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Dynamsoft Barcode Scanner</title>
-  <script src="https://cdn.jsdelivr.net/npm/dynamsoft-javascript-barcode@10.0.20/dist/dbr.js"></script>
+  <title>QuaggaJS Scanner</title>
+  <script src="https://unpkg.com/@ericblade/quagga2@1.2.6/dist/quagga.min.js"></script>
 </head>
 <body>
-  <h1>Dynamsoft Scanner</h1>
-  <div id="scanner" style="width: 300px; height: 300px;"></div>
+  <h1>QuaggaJS Barcode Scanner</h1>
+  <div id="scanner" style="width: 100%; max-width: 400px; margin: auto;"></div>
   <div id="result"></div>
 
   <script>
-    Dynamsoft.DBR.BarcodeScanner.license = "YOUR_LICENSE_KEY_HERE"; // Replace with your key
+    const resultElem = document.getElementById('result');
 
-    (async () => {
-      const scanner = await Dynamsoft.DBR.BarcodeScanner.createInstance();
-      await scanner.updateVideoSettings({ video: { facingMode: "environment" } });
-
-      scanner.onFrameRead = results => {
-        for (const result of results) {
-          document.getElementById('result').innerText = "Scanned: " + result.barcodeText;
-          scanner.hide(); // stop after first
-          break;
+    Quagga.init({
+      inputStream: {
+        name: "Live",
+        type: "LiveStream",
+        target: document.querySelector('#scanner'),
+        constraints: {
+          facingMode: "environment"
         }
-      };
+      },
+      decoder: {
+        readers: ["code_128_reader", "ean_reader", "upc_reader"] // Add more if needed
+      }
+    }, function (err) {
+      if (err) {
+        resultElem.innerText = "Init error: " + err;
+        return;
+      }
+      Quagga.start();
+    });
 
-      scanner.onUnduplicatedRead = (txt, result) => {
-        console.log("Unduplicated read:", txt);
-      };
-
-      await scanner.show(document.getElementById('scanner'));
-    })();
+    Quagga.onDetected(data => {
+      resultElem.innerText = "Detected: " + data.codeResult.code;
+      Quagga.stop();
+    });
   </script>
 </body>
 </html>
