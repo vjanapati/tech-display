@@ -3,89 +3,112 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>jQuery jsQR Barcode Scanner</title>
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js"></script>
+  <title>Reliable Barcode Scanner with QuaggaJS</title>
+  <!-- QuaggaJS CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 20px; background-color: #f4f4f4; }
-    #video { width: 100%; max-width: 640px; height: auto; border: 2px solid #333; border-radius: 5px; margin: 20px auto; display: block; }
-    #result { font-size: 18px; color: #333; margin-top: 10px; padding: 10px; background-color: #fff; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    #startBtn, #stopBtn { padding: 10px 20px; font-size: 16px; margin: 5px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px; }
-    #startBtn:hover, #stopBtn:hover { background-color: #0056b3; }
-    #stopBtn { background-color: #dc3545; }
-    #stopBtn:hover { background-color: #b02a37; }
-    canvas { display: none; } /* Hidden canvas for processing */
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    #videoContainer {
+      position: relative;
+      width: 100%;
+      max-width: 640px;
+      margin: 20px auto;
+    }
+    #video {
+      width: 100%;
+      height: auto;
+      border: 2px solid #333;
+      border-radius: 5px;
+    }
+    #result {
+      font-size: 18px;
+      color: #333;
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #fff;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    #startBtn, #stopBtn {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin: 5px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    #startBtn:hover, #stopBtn:hover {
+      background-color: #0056b3;
+    }
+    #stopBtn {
+      background-color: #dc3545;
+    }
+    #stopBtn:hover {
+      background-color: #b02a37;
+    }
+    /* Optional: Overlay for scanning area */
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      border: 2px dashed #ff0000;
+      box-sizing: border-box;
+    }
   </style>
 </head>
 <body>
-  <h1>jQuery jsQR Barcode Scanner</h1>
-  <video id="video" autoplay playsinline></video>
-  <canvas id="canvas"></canvas>
-  <div id="result">Scan a QR code to see the result here.</div>
+  <h1>Reliable Barcode Scanner</h1>
+  <div id="videoContainer">
+    <video id="video" autoplay playsinline></video>
+    <div class="overlay"></div>
+  </div>
+  <div id="result">Click "Start Scanner" to begin.</div>
   <button id="startBtn">Start Scanner</button>
   <button id="stopBtn">Stop Scanner</button>
 
   <script>
-    $(document).ready(function() {
+    document.addEventListener('DOMContentLoaded', function() {
       let stream = null;
-      let scanning = false;
-      const $video = $('#video');
-      const $result = $('#result');
-      const $canvas = $('#canvas');
-      const canvas = $canvas[0];
-      const context = canvas.getContext('2d');
+      const video = document.getElementById('video');
+      const resultDiv = document.getElementById('result');
 
-      // Start scanner
-      async function startScanner() {
-        if (scanning) return;
+      // Initialize QuaggaJS
+      function startScanner() {
+        if (stream) return;
 
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: 'environment' }
-          });
-          $video[0].srcObject = stream;
-          $video[0].play();
-          scanning = true;
-          $result.text('Scanning...');
-          scanQR();
-        } catch (err) {
-          console.error('Camera error:', err);
-          $result.text('Error accessing camera. Please allow permissions.');
-        }
-      }
-
-      // Stop scanner
-      function stopScanner() {
-        if (stream) {
-          stream.getTracks().forEach(track => track.stop());
-          $video[0].srcObject = null;
-          scanning = false;
-          $result.text('Scanner stopped. Click "Start Scanner" to begin again.');
-        }
-      }
-
-      // Scan QR code
-      function scanQR() {
-        if (!scanning) return;
-
-        if ($video[0].readyState === $video[0].HAVE_ENOUGH_DATA) {
-          $canvas.attr('width', $video[0].videoWidth);
-          $canvas.attr('height', $video[0].videoHeight);
-          context.drawImage($video[0], 0, 0, $canvas[0].width, $canvas[0].height);
-          const imageData = context.getImageData(0, 0, $canvas[0].width, $canvas[0].height);
-          const code = jsQR(imageData.data, imageData.width, imageData.height);
-
-          if (code) {
-            $result.text(`Detected QR Code: ${code.data}`);
-          }
-        }
-        requestAnimationFrame(scanQR);
-      }
-
-      // Button handlers
-      $('#startBtn').on('click', startScanner);
-      $('#stopBtn').on('click', stopScanner);
-    });
-  </script>
-</body>
-</html>
+        Quagga.init({
+          inputStream: {
+            name: 'Live',
+            type: 'LiveStream',
+            target: video, // Attach to the video element
+            constraints: {
+              facingMode: 'environment', // Use rear camera
+              width: 640,
+              height: 480
+            }
+          },
+          decoder: {
+            readers: [
+              'ean_reader',        // EAN-13, EAN-8
+              'upc_reader',        // UPC-A, UPC-E
+              'code_128_reader',   // Code 128
+              'code_39_reader',    // Code 39
+              'code_39_vin',
+              'codabar_reader'     // Codabar
+              // Add more readers as needed: 'i2of5_reader', '2of5_reader', etc.
+            ]
+          },
+          locator: {
+            patchSize: 'medium',
+            halfSample
