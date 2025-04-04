@@ -34,7 +34,7 @@ function startScanner() {
       isWaitingForResponse = true;
 
       console.log(`Message: ${decodedText}, Result: ${JSON.stringify(decodedResult)}`);
-      $('#barcode_search').val(decodedText); // Set the value of the barcode field
+      alert(decodedText); // Set the value of the barcode field
       $("#barcode_submit").trigger('click'); // Trigger a click event on the submit button
 
       // Hide the scanner and show the product info
