@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barcode Scanner with Node.js</title>
+  <script>
+async function initScanner() {
+  if (!('BarcodeDetector' in window)) {
+    console.log('Barcode Detector not supported.');
+    document.getElementById('result').textContent = 'Barcode scanning not supported.';
+    return;
+  }
+
+  const barcodeDetector = new BarcodeDetector({
+    formats: ['code_128', 'ean_13', 'qr_code'], // Customize as needed
+  });
+
+  const video = document.getElementById('video');
+  const resultDiv = document.getElementById('result');
+
+  // WebSocket connection to Node.js server
+  const ws = new WebSocket('ws://localhost:3000');
+
+  ws.onopen = () => console.log('Connected to server');
+  ws.onerror = (err) => console.error('WebSocket error:', err);
+
+  // Access camera
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment' },
+    });
+    video.srcObject = stream;
+    video.play();
+  } catch (err) {
+    console.error('Camera error:', err);
+    resultDiv.textContent = 'Error accessing camera.';
+    return;
+  }
+
+  // Scan barcodes
+  async function scanBarcode() {
+    try {
+      const barcodes = await barcodeDetector.detect(video);
+      if (barcodes.length > 0) {
+        const barcode = barcodes[0];
+        const result = `Detected: ${barcode.rawValue}`;
+        resultDiv.textContent = result;
+
+        // Send barcode data to server via WebSocket
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ barcode: barcode.rawValue }));
+        }
+      }
+    } catch (err) {
+      console.error('Detection error:', err);
+    }
+    requestAnimationFrame(scanBarcode);
+  }
+
+  scanBarcode();
+}
+
+window.addEventListener('load', initScanner);
+  </script>
+  <style>
+    video {
+      width: 100%;
+      max-width: 640px;
+      height: auto;
+      display: block;
+      margin: 20px auto;
+    }
+    #result {
+      text-align: center;
+      font-size: 18px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Barcode Scanner</h1>
+  <video id="video" autoplay playsinline></video>
+  <div id="result"></div>
+  <script src="/scanner.js"></script>
+</body>
+</html>
