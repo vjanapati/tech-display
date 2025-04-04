@@ -16,7 +16,7 @@
 
 <body>
 <div id="camera" style="width:100%"></div>
-    <div id="filer" style="height:200px;" ></div>
+    <div id="filer" style="height:150px;" ></div>
 
 <div id="result" ></div>
 
@@ -68,7 +68,7 @@
 
     Quagga.onDetected(function (result) {
         const code = result.codeResult.code;
-        
+        document.getElementById("result").textContent = code;
         // Validation and consistency check
         if (code === lastResult) {
             detectionCount++;
@@ -79,7 +79,7 @@
 
         // Only display result if detected consistently
         if (detectionCount >= requiredConsistency) {
-            document.getElementById("result").textContent = code;
+            document.getElementById("result").textContent ='updated code'+ code;
             // Optional: Stop scanning after successful read
             // Quagga.stop();
         }
