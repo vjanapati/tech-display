@@ -8,6 +8,7 @@
        function onScanSuccess(decodedText, decodedResult) {
   // handle the scanned code as you like, for example:
   document.getElementById('qr-reader-results').value = decodedText;
+  alert(decodedText);
   console.log(`Code matched = ${decodedText}`, decodedResult);
 }
 
@@ -18,7 +19,7 @@ function onScanFailure(error) {
 }
 
 let html5QrcodeScanner = new Html5QrcodeScanner(
-    "qr-reader", { fps: 20, qrbox: 700, videoConstraints: {
+    "qr-reader", { fps: 10, qrbox: 700, videoConstraints: {
                     facingMode: { exact: "environment" },
                 } }, /* verbose= */ false);
 html5QrcodeScanner.render(onScanSuccess, onScanFailure);
