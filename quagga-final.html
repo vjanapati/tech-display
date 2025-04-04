@@ -16,6 +16,16 @@
 <div id="camera" style="width:100%"></div>
 <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
 <script>
+   let backCameraList = []; // Empty array
+
+    navigator.mediaDevices.enumerateDevices().then(function(devices) {
+        devices.forEach(function(device) {
+        // alert('device - ' + JSON.stringify(device));
+        if ( device.kind === 'videoinput' && device.label.match(/back/) != null ) {
+        // alert('Back found! - ' + device.label);
+        backCameraList.push({'deviceLabel': device.label, 'deviceId': device.deviceId});
+    }
+});
     const quaggaConf = {
         inputStream: {
             target: document.querySelector("#camera"),
@@ -25,6 +35,7 @@
                 height: { min: 480 },
                 facingMode: "environment",
                 focusMode: "continuous",
+                deviceId: backCameraList[backCameraList.length - 1]['deviceId'],
                 aspectRatio: { min: 1, max: 2 }
             }
         },
