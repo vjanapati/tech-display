@@ -4,55 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>jQuery Barcode Scanner</title>
-  <!-- jQuery CDN -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <!-- Optional: Barcode Detector Polyfill for non-Chromium browsers -->
   <script src="https://unpkg.com/@undecaf/barcode-detector-polyfill@0.9.20/dist/index.min.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin: 0;
-      padding: 20px;
-      background-color: #f4f4f4;
-    }
-    #video {
-      width: 100%;
-      max-width: 640px;
-      height: auto;
-      border: 2px solid #333;
-      border-radius: 5px;
-      margin: 20px auto;
-      display: block;
-    }
-    #result {
-      font-size: 18px;
-      color: #333;
-      margin-top: 10px;
-      padding: 10px;
-      background-color: #fff;
-      border-radius: 5px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    #startBtn, #stopBtn {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin: 5px;
-      cursor: pointer;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-    }
-    #startBtn:hover, #stopBtn:hover {
-      background-color: #0056b3;
-    }
-    #stopBtn {
-      background-color: #dc3545;
-    }
-    #stopBtn:hover {
-      background-color: #b02a37;
-    }
+    body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 20px; background-color: #f4f4f4; }
+    #video { width: 100%; max-width: 640px; height: auto; border: 2px solid #333; border-radius: 5px; margin: 20px auto; display: block; }
+    #result { font-size: 18px; color: #333; margin-top: 10px; padding: 10px; background-color: #fff; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    #startBtn, #stopBtn { padding: 10px 20px; font-size: 16px; margin: 5px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px; }
+    #startBtn:hover, #stopBtn:hover { background-color: #0056b3; }
+    #stopBtn { background-color: #dc3545; }
+    #stopBtn:hover { background-color: #b02a37; }
   </style>
 </head>
 <body>
@@ -69,33 +30,28 @@
       const $video = $('#video');
       const $result = $('#result');
 
-      // Check if BarcodeDetector is supported
+      // Check BarcodeDetector support with fallback
       if (!('BarcodeDetector' in window)) {
-        $result.text('Barcode Detector is not supported in this browser.');
+        $result.html('Barcode Detector is not natively supported in this browser. ' +
+                     'The polyfill may not work on iOS Safari. Please use Chrome on Android or desktop for best results.');
         $('#startBtn').prop('disabled', true);
-        return;
+        console.warn('Native BarcodeDetector not supported. Relying on polyfill.');
+      } else {
+        console.log('Native BarcodeDetector supported.');
       }
 
       // Initialize BarcodeDetector
       const barcodeDetector = new BarcodeDetector({
-        formats: [
-          'code_128',
-          'ean_13',
-          'ean_8',
-          'upc_a',
-          'upc_e',
-          'code_39',
-          'qr_code' // Add more formats as needed
-        ]
+        formats: ['code_128', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_39', 'qr_code']
       });
 
-      // Start scanner function
+      // Start scanner
       async function startScanner() {
         if (scanning) return;
 
         try {
           stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: 'environment' } // Prefer rear camera
+            video: { facingMode: 'environment' }
           });
           $video[0].srcObject = stream;
           $video[0].play();
@@ -104,11 +60,11 @@
           scanBarcode();
         } catch (err) {
           console.error('Camera error:', err);
-          $result.text('Error accessing camera. Please allow permissions.');
+          $result.text('Error accessing camera. Please allow permissions and ensure your browser supports it.');
         }
       }
 
-      // Stop scanner function
+      // Stop scanner
       function stopScanner() {
         if (stream) {
           stream.getTracks().forEach(track => track.stop());
@@ -118,7 +74,7 @@
         }
       }
 
-      // Scan barcode continuously
+      // Scan barcode
       async function scanBarcode() {
         if (!scanning) return;
 
@@ -130,23 +86,14 @@
           }
         } catch (err) {
           console.error('Detection error:', err);
+          $result.text('Error detecting barcode. Polyfill may not be working.');
         }
-
-        // Continue scanning
         requestAnimationFrame(scanBarcode);
       }
 
-      // Button event handlers
-      $('#startBtn').on('click', function() {
-        startScanner();
-      });
-
-      $('#stopBtn').on('click', function() {
-        stopScanner();
-      });
-
-      // Start scanner on page load (optional)
-      // startScanner();
+      // Button handlers
+      $('#startBtn').on('click', startScanner);
+      $('#stopBtn').on('click', stopScanner);
     });
   </script>
 </body>
