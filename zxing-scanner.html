@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ZXing Barcode Scanner</title>
+  <script type="module">
+    import { BrowserMultiFormatReader } from 'https://cdn.jsdelivr.net/npm/@zxing/library@latest/+esm';
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const codeReader = new BrowserMultiFormatReader();
+      const videoElement = document.getElementById('video');
+      const resultElement = document.getElementById('result');
+      const cameraSelect = document.getElementById('cameraSelect');
+
+      codeReader
+        .listVideoInputDevices()
+        .then((videoInputDevices) => {
+          videoInputDevices.forEach((device) => {
+            const option = document.createElement('option');
+            option.value = device.deviceId;
+            option.text = device.label || `Camera ${cameraSelect.length + 1}`;
+            cameraSelect.appendChild(option);
+          });
+
+          cameraSelect.addEventListener('change', () => {
+            codeReader.reset();
+            startScanner(cameraSelect.value);
+          });
+
+          if (videoInputDevices.length > 0) {
+            startScanner(videoInputDevices[0].deviceId);
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+
+      function startScanner(deviceId) {
+        codeReader.decodeFromVideoDevice(deviceId, videoElement, (result, err) => {
+          if (result) {
+            resultElement.textContent = `Scanned Result: ${result.getText()}`;
+          }
+        });
+      }
+    });
+  </script>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    video {
+      width: 100%;
+      max-width: 400px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <h1>ZXing Barcode Scanner</h1>
+  <select id="cameraSelect"></select>
+  <br><br>
+  <video id="video" playsinline></video>
+  <div id="result">Scanned Result: <em>Waiting...</em></div>
+</body>
+</html>
