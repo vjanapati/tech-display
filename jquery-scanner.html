@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>jQuery Barcode Scanner</title>
+  <title>jQuery jsQR Barcode Scanner</title>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://unpkg.com/@undecaf/barcode-detector-polyfill@0.9.20/dist/index.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 20px; background-color: #f4f4f4; }
     #video { width: 100%; max-width: 640px; height: auto; border: 2px solid #333; border-radius: 5px; margin: 20px auto; display: block; }
@@ -14,12 +14,14 @@
     #startBtn:hover, #stopBtn:hover { background-color: #0056b3; }
     #stopBtn { background-color: #dc3545; }
     #stopBtn:hover { background-color: #b02a37; }
+    canvas { display: none; } /* Hidden canvas for processing */
   </style>
 </head>
 <body>
-  <h1>jQuery Barcode Scanner</h1>
+  <h1>jQuery jsQR Barcode Scanner</h1>
   <video id="video" autoplay playsinline></video>
-  <div id="result">Scan a barcode to see the result here.</div>
+  <canvas id="canvas"></canvas>
+  <div id="result">Scan a QR code to see the result here.</div>
   <button id="startBtn">Start Scanner</button>
   <button id="stopBtn">Stop Scanner</button>
 
@@ -29,21 +31,9 @@
       let scanning = false;
       const $video = $('#video');
       const $result = $('#result');
-
-      // Check BarcodeDetector support with fallback
-      if (!('BarcodeDetector' in window)) {
-        $result.html('Barcode Detector is not natively supported in this browser. ' +
-                     'The polyfill may not work on iOS Safari. Please use Chrome on Android or desktop for best results.');
-        $('#startBtn').prop('disabled', true);
-        console.warn('Native BarcodeDetector not supported. Relying on polyfill.');
-      } else {
-        console.log('Native BarcodeDetector supported.');
-      }
-
-      // Initialize BarcodeDetector
-      const barcodeDetector = new BarcodeDetector({
-        formats: ['code_128', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_39', 'qr_code']
-      });
+      const $canvas = $('#canvas');
+      const canvas = $canvas[0];
+      const context = canvas.getContext('2d');
 
       // Start scanner
       async function startScanner() {
@@ -57,10 +47,10 @@
           $video[0].play();
           scanning = true;
           $result.text('Scanning...');
-          scanBarcode();
+          scanQR();
         } catch (err) {
           console.error('Camera error:', err);
-          $result.text('Error accessing camera. Please allow permissions and ensure your browser supports it.');
+          $result.text('Error accessing camera. Please allow permissions.');
         }
       }
 
@@ -74,21 +64,22 @@
         }
       }
 
-      // Scan barcode
-      async function scanBarcode() {
+      // Scan QR code
+      function scanQR() {
         if (!scanning) return;
 
-        try {
-          const barcodes = await barcodeDetector.detect($video[0]);
-          if (barcodes.length > 0) {
-            const barcode = barcodes[0];
-            $result.text(`Detected Barcode: ${barcode.rawValue}`);
+        if ($video[0].readyState === $video[0].HAVE_ENOUGH_DATA) {
+          $canvas.attr('width', $video[0].videoWidth);
+          $canvas.attr('height', $video[0].videoHeight);
+          context.drawImage($video[0], 0, 0, $canvas[0].width, $canvas[0].height);
+          const imageData = context.getImageData(0, 0, $canvas[0].width, $canvas[0].height);
+          const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+          if (code) {
+            $result.text(`Detected QR Code: ${code.data}`);
           }
-        } catch (err) {
-          console.error('Detection error:', err);
-          $result.text('Error detecting barcode. Polyfill may not be working.');
         }
-        requestAnimationFrame(scanBarcode);
+        requestAnimationFrame(scanQR);
       }
 
       // Button handlers
