@@ -7,7 +7,7 @@
 <script>
        function onScanSuccess(decodedText, decodedResult) {
   // handle the scanned code as you like, for example:
-  document.getElementById('text').value = decodedText;
+  document.getElementById('qr-reader-results').value = decodedText;
   console.log(`Code matched = ${decodedText}`, decodedResult);
 }
 
