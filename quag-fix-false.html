@@ -28,8 +28,7 @@
             type: "LiveStream",
             constraints: {
                 width: { min: 640 },
-                height: { min: 480 },
-                focusMode: "continuous",
+                height: { min: 200 },
                 facingMode: "environment",
                 aspectRatio: { min: 1, max: 2 }
             },
@@ -69,6 +68,7 @@
     Quagga.onDetected(function (result) {
         const code = result.codeResult.code;
         document.getElementById("result").textContent = code;
+        alert('code-->'+ code);
         // Validation and consistency check
         if (code === lastResult) {
             detectionCount++;
