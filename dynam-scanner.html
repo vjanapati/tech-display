@@ -19,7 +19,10 @@
         type: "LiveStream",
         target: document.querySelector('#scanner'),
         constraints: {
-          facingMode: "environment"
+             width: {min: 1600},
+              height: {min: 480},
+              facingMode: "environment",
+              aspectRatio: {min: 1, max: 2}
         }
       },
       decoder: {
