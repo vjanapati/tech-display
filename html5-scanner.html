@@ -39,7 +39,11 @@
     // Initialize the QR code scanner
     let html5QrcodeScanner = new Html5QrcodeScanner(
       "reader", { fps: 10, qrbox: 650, videoConstraints: {
-                    facingMode: { exact: "environment" },
+                                       width: {min: 1600},
+                    height: {min: 480},
+                    facingMode: {"environment"},
+                    aspectRatio: {min: 1, max: 2},
+	      
                 } },
       /* verbose= */ false);
     html5QrcodeScanner.render(onScanSuccess, onScanFailure);
