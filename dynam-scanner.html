@@ -26,8 +26,7 @@
         }
       },
       decoder: {
-        //readers: ["code_128_reader", "code_39_reader", "code_39_vin_reader","ean_reader", "upc_reader"] // Add more if needed
-        readers: ["code_39_reader"]
+        readers: ["code_128_reader", "code_39_reader", "code_39_vin_reader","ean_reader", "upc_reader"] // Add more if needed
       }
     }, function (err) {
       if (err) {
@@ -38,7 +37,7 @@
     });
 
     Quagga.onDetected(data => {
-      resultElem.innerText = "Detected: " + data.codeResult.code;
+      resultElem.innerText =data.codeResult;
       Quagga.stop();
     });
   </script>
