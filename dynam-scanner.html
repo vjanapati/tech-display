@@ -20,13 +20,13 @@
         target: document.querySelector('#scanner'),
         constraints: {
              width: {min: 1600},
-              height: {max: 200},
+              height: {min: 220},
               facingMode: "environment",
               aspectRatio: {min: 1, max: 2}
         }
       },
       decoder: {
-        readers: ["code_39_reader","code_39_vin_reader"] // Add more if needed
+        readers: ["code_39_reader","code_128_reader"] // Add more if needed
       }
     }, function (err) {
       if (err) {
