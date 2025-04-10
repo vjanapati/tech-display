@@ -26,7 +26,8 @@
         }
       },
       decoder: {
-        readers: ["code_128_reader", "code_39_reader", "code_39_vin_reader","ean_reader", "upc_reader"] // Add more if needed
+        //readers: ["code_128_reader", "code_39_reader", "code_39_vin_reader","ean_reader", "upc_reader"] // Add more if needed
+        readers: ["code_39_vin_reader"]
       }
     }, function (err) {
       if (err) {
